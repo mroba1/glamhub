@@ -134,7 +134,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-[hsl(0,0%,50%)] mt-8">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-[hsl(38,65%,60%)] hover:underline font-medium">
+            <Link href="/join" className="text-[hsl(38,65%,60%)] hover:underline font-medium">
               Create one free
             </Link>
           </p>

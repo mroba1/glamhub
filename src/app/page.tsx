@@ -48,7 +48,7 @@ export default function HomePage() {
           <Link href="/login">
             <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">Sign In</Button>
           </Link>
-          <Link href="/register">
+          <Link href="/join">
             <Button variant="gold" size="sm">Get Started</Button>
           </Link>
         </div>
@@ -297,7 +297,7 @@ export default function HomePage() {
             Join thousands of Nigerian women who trust Glam Hub for their beauty needs.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/register">
+            <Link href="/join">
               <Button variant="gold" size="xl" className="group">
                 Start Your Journey
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
