@@ -1,400 +1,345 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
 import {
   Sparkles, ArrowRight, CheckCircle, Globe, Paintbrush,
-  ShoppingBag, Calendar, BarChart3, Bell, Star,
-  ChevronDown, Zap, Shield, Crown,
+  ShoppingBag, Calendar, BarChart3, Bell, Star, Menu, X,
+  Zap, Shield, Crown, ChevronRight,
 } from "lucide-react";
-import { APP_NAME } from "@/constants";
 
-// ── Data ─────────────────────────────────────────────────────
+const NAV_LINKS = ["Features", "How It Works", "Pricing"];
+
 const FEATURES = [
-  { icon: Globe,      title: "Your Own Website",       desc: "Get a unique branded URL (glamhub.com/your-salon) that's entirely yours. No coding required." },
-  { icon: Calendar,   title: "Appointment Booking",     desc: "Let customers book appointments directly from your site with real-time availability." },
-  { icon: ShoppingBag,title: "Online Marketplace",      desc: "Sell your beauty products online. Manage stock, pricing, and orders from one dashboard." },
-  { icon: Paintbrush, title: "Full Customization",      desc: "Upload your logo, set your brand colours, write your story. Your site, your identity." },
-  { icon: BarChart3,  title: "Business Analytics",      desc: "Track bookings, revenue, and customers with a clean dashboard designed for salons." },
-  { icon: Bell,       title: "Smart Notifications",     desc: "Get notified instantly for new bookings, orders, and payments. Never miss a customer." },
+  { icon: Globe,       title: "Your Own Website URL",     desc: "Get glamhub.com/your-salon — a unique link that's entirely yours. Share it anywhere." },
+  { icon: Calendar,    title: "Online Appointment Booking", desc: "Customers book directly from your site. You approve, manage, and track everything." },
+  { icon: ShoppingBag, title: "Sell Products Online",      desc: "List your beauty products and sell them 24/7 with built-in inventory management." },
+  { icon: Paintbrush,  title: "Custom Branding",           desc: "Your logo, your colours, your story. Make your site look exactly like your brand." },
+  { icon: BarChart3,   title: "Business Dashboard",        desc: "Track bookings, revenue, and customers from one clean, simple dashboard." },
+  { icon: Bell,        title: "Instant Notifications",     desc: "Get notified the moment a customer books or places an order. Never miss a thing." },
 ];
 
 const STEPS = [
-  { step: "01", title: "Create Your Account",     desc: "Sign up as a business owner in under 2 minutes. No credit card needed to start." },
-  { step: "02", title: "Customize Your Site",      desc: "Upload your logo, add your services, set your hours and brand colours." },
-  { step: "03", title: "Choose a Plan & Pay",      desc: "Pick a subscription that fits your business. Payment is simple and secure." },
-  { step: "04", title: "Go Live & Share",          desc: "Get your unique link — glamhub.com/your-salon — and share it with your customers." },
+  { num: "1", title: "Create Your Account",    desc: "Sign up as a business owner. Takes less than 2 minutes." },
+  { num: "2", title: "Customize Your Website", desc: "Add your logo, services, photos, and brand colours — no coding needed." },
+  { num: "3", title: "Choose a Plan",          desc: "Pick a subscription that fits your business size and budget." },
+  { num: "4", title: "Go Live & Share",        desc: "Get your unique link and start receiving bookings and orders immediately." },
 ];
 
 const PLANS = [
   {
-    id: "starter",
-    name: "Starter",
-    icon: Zap,
-    monthly: "₦15,000",
-    yearly: "₦150,000",
-    desc: "Perfect for small salons just starting out",
-    features: ["Up to 20 products", "50 bookings/month", "Basic analytics", "Customer management", "Your own website URL"],
-    cta: "Get Started",
+    name: "Starter", icon: Zap, price: "₦15,000", year: "₦150,000",
+    desc: "Perfect for small salons starting out",
+    features: ["Your own website URL", "Up to 20 products", "50 bookings/month", "Basic analytics", "Customer management"],
     popular: false,
   },
   {
-    id: "growth",
-    name: "Growth",
-    icon: Shield,
-    monthly: "₦35,000",
-    yearly: "₦350,000",
-    desc: "For growing salons with expanding clientele",
-    features: ["Up to 100 products", "200 bookings/month", "Advanced analytics", "Priority notifications", "Custom promotions", "Multiple staff accounts"],
-    cta: "Start Growing",
+    name: "Growth", icon: Shield, price: "₦35,000", year: "₦350,000",
+    desc: "For salons ready to grow fast",
+    features: ["Your own website URL", "Up to 100 products", "200 bookings/month", "Advanced analytics", "Custom promotions", "Multiple staff accounts"],
     popular: true,
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    icon: Crown,
-    monthly: "₦75,000",
-    yearly: "₦750,000",
-    desc: "For large salons and multi-branch operations",
-    features: ["Unlimited products", "Unlimited bookings", "Full analytics suite", "Dedicated account manager", "API access", "Priority 24/7 support"],
-    cta: "Scale Up",
+    name: "Enterprise", icon: Crown, price: "₦75,000", year: "₦750,000",
+    desc: "For large salons and multi-branch",
+    features: ["Your own website URL", "Unlimited products", "Unlimited bookings", "Full analytics suite", "Dedicated manager", "Priority 24/7 support"],
     popular: false,
   },
 ];
 
 const TESTIMONIALS = [
-  { name: "Amaka Eze",      role: "Owner, Glam Parlor Lagos",      text: "I had my website up in one afternoon. My clients now book online and I've doubled my revenue in 3 months.", stars: 5 },
-  { name: "Blessing Okafor",role: "CEO, Beauty House Abuja",        text: "The marketplace feature alone was worth it. I sell my products 24/7 without lifting a finger.", stars: 5 },
-  { name: "Chidinma Nwosu", role: "Founder, Nail Zone Port Harcourt",text: "Professional, beautiful, and so easy. My customers love the booking system. I love the dashboard.", stars: 5 },
+  { name: "Amaka E.",    biz: "Glam Parlor, Lagos",        quote: "I had my website live in one afternoon. Bookings doubled in 3 months.", stars: 5 },
+  { name: "Blessing O.", biz: "Beauty House, Abuja",       quote: "The marketplace feature pays for itself. I sell products while I sleep.", stars: 5 },
+  { name: "Chidinma N.", biz: "Nail Zone, Port Harcourt",  quote: "My clients love booking online. The dashboard is so clean and simple.", stars: 5 },
 ];
 
-// ── Page ─────────────────────────────────────────────────────
 export default function LandingPage() {
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
-      {/* ═══════════════ NAV ═══════════════ */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/8 bg-[#0a0a0a]/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+  return (
+    <div className="min-h-screen bg-[#080808] text-white overflow-x-hidden">
+
+      {/* ─── NAVBAR ─────────────────────────────────────── */}
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/[0.07] bg-[#080808]/95 backdrop-blur-lg">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <div className="h-8 w-8 rounded-lg bg-[#c9a96e] flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-black" />
             </div>
-            <span className="font-serif text-lg font-bold text-white">{APP_NAME}</span>
+            <span className="font-serif text-lg font-bold">Glam Hub</span>
+          </Link>
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-7 text-sm text-white/50">
+            {NAV_LINKS.map((l) => (
+              <a key={l} href={`#${l.toLowerCase().replace(" ", "-")}`} className="hover:text-white transition-colors">
+                {l}
+              </a>
+            ))}
           </div>
 
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm text-white/55">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
-            <a href="#features"     className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing"      className="hover:text-white transition-colors">Pricing</a>
-          </nav>
-
-          {/* CTAs */}
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="hidden sm:block text-sm text-white/60 hover:text-white transition-colors font-medium">
-              Sign In
-            </Link>
-            <Link href="/join">
-              <button className="flex items-center gap-1.5 text-sm font-semibold text-black bg-[#c9a96e] px-4 py-2 rounded-xl hover:bg-[#b8935a] transition-colors">
-                Start Free <ArrowRight className="h-3.5 w-3.5" />
-              </button>
+          {/* Desktop CTAs */}
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/login" className="text-sm text-white/50 hover:text-white transition-colors">Sign In</Link>
+            <Link href="/join" className="flex items-center gap-1.5 text-sm font-semibold text-black bg-[#c9a96e] px-4 py-2 rounded-xl hover:bg-[#b8935a] transition-colors">
+              Get Started <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-        </div>
-      </header>
 
-      {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-16 overflow-hidden">
-        {/* Subtle radial glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="h-[600px] w-[600px] rounded-full bg-[#c9a96e]/6 blur-[120px]" />
+          {/* Mobile menu toggle */}
+          <button className="md:hidden text-white/60 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
 
-        {/* Grid background pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",
-          backgroundSize: "60px 60px",
-        }} />
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-white/[0.07] bg-[#0d0d0d] px-5 py-4 space-y-3">
+            {NAV_LINKS.map((l) => (
+              <a key={l} href={`#${l.toLowerCase().replace(" ", "-")}`} onClick={() => setMobileOpen(false)}
+                className="block text-sm text-white/60 hover:text-white py-1.5">{l}</a>
+            ))}
+            <div className="pt-2 flex flex-col gap-2 border-t border-white/[0.07]">
+              <Link href="/login" className="text-sm text-center text-white/60 py-2.5 rounded-xl border border-white/10 hover:bg-white/5">Sign In</Link>
+              <Link href="/join" className="text-sm text-center font-semibold text-black bg-[#c9a96e] py-2.5 rounded-xl hover:bg-[#b8935a]">Get Started Free</Link>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* ─── HERO ───────────────────────────────────────── */}
+      <section className="relative flex flex-col items-center justify-center text-center min-h-screen pt-16 px-5">
+        {/* Glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+          <div className="h-[500px] w-[500px] rounded-full bg-[#c9a96e]/[0.07] blur-[100px]" />
+        </div>
+
+        {/* Dot grid */}
+        <div className="absolute inset-0 opacity-[0.025]"
+          style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
 
         <div className="relative z-10 max-w-4xl mx-auto">
-          {/* Pill badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#c9a96e]/30 bg-[#c9a96e]/8 px-4 py-1.5 mb-8 text-xs font-medium text-[#c9a96e]">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#c9a96e]/25 bg-[#c9a96e]/[0.08] px-4 py-1.5 mb-7 text-xs font-medium text-[#c9a96e]">
             <Sparkles className="h-3.5 w-3.5" />
-            Nigeria&apos;s #1 Beauty Business Platform
+            Built for Nigerian Beauty & Salon Businesses
           </div>
 
-          {/* Main headline */}
-          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.92] mb-6">
-            Build Your Beauty
-            <br />
-            <span className="text-[#c9a96e] italic">Business Website</span>
-            <br />
-            in Minutes
+          {/* Headline */}
+          <h1 className="font-serif font-bold leading-[1.05] mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+            Do You Want to Create a{" "}
+            <span className="text-[#c9a96e]">Custom Website</span>{" "}
+            for Your Beauty Business?
           </h1>
 
-          <p className="text-lg sm:text-xl text-white/55 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Do you own a salon, spa, or beauty studio? Create your professional website,
-            take bookings, sell products, and grow your business — all in one place.
-            No coding. No stress.
+          <p className="text-base sm:text-lg text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Glam Hub gives salons, spas, and beauty studios their own professional website —
+            with online booking, a product marketplace, and a full business dashboard.
+            No code. No hassle. Just results.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
             <Link href="/join">
-              <button className="flex items-center justify-center gap-2 text-base font-semibold text-black bg-[#c9a96e] px-8 py-4 rounded-xl hover:bg-[#b8935a] transition-all hover:shadow-[0_0_30px_rgba(201,169,110,0.3)] group">
-                Create Your Business Page
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <button className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base font-semibold text-black bg-[#c9a96e] px-7 py-3.5 rounded-xl hover:bg-[#b8935a] transition-all hover:shadow-[0_0_25px_rgba(201,169,110,0.25)] group">
+                Create My Business Page — Free
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </Link>
             <a href="#how-it-works">
-              <button className="flex items-center justify-center gap-2 text-base font-medium text-white/70 border border-white/15 px-8 py-4 rounded-xl hover:bg-white/5 hover:text-white transition-colors">
+              <button className="w-full sm:w-auto text-sm sm:text-base text-white/60 border border-white/12 px-7 py-3.5 rounded-xl hover:bg-white/[0.04] hover:text-white transition-colors">
                 See How It Works
-                <ChevronDown className="h-4 w-4" />
               </button>
             </a>
           </div>
 
-          {/* Social proof numbers */}
-          <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
+          {/* Stats */}
+          <div className="flex flex-wrap justify-center gap-8 sm:gap-12">
             {[
-              { value: "500+", label: "Beauty Businesses" },
-              { value: "50K+", label: "Bookings Made" },
-              { value: "12",   label: "Cities in Nigeria" },
-            ].map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <p className="font-serif text-3xl font-bold text-[#c9a96e]">{value}</p>
-                <p className="text-xs text-white/40 mt-0.5">{label}</p>
+              { v: "500+",  l: "Businesses" },
+              { v: "50K+",  l: "Bookings" },
+              { v: "12",    l: "Cities" },
+              { v: "4.9★",  l: "Rating" },
+            ].map(({ v, l }) => (
+              <div key={l} className="text-center">
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-[#c9a96e]">{v}</p>
+                <p className="text-xs text-white/35 mt-0.5">{l}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
-      </section>
-
-      {/* ═══════════════ WHAT YOU GET (mini-site preview) ═══════════════ */}
-      <section className="py-24 px-4 sm:px-6 bg-[#0d0d0d]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[#c9a96e] text-sm font-semibold uppercase tracking-widest mb-3">What You Get</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
-              Your Own Corner of the Internet
-            </h2>
-            <p className="text-white/50 text-lg max-w-xl mx-auto">
-              Every business on Glam Hub gets a unique, branded website that customers
-              can find, book from, and shop on — all powered by you.
-            </p>
-          </div>
-
-          {/* Mock browser preview */}
-          <div className="max-w-4xl mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-            {/* Browser chrome */}
-            <div className="bg-[#1a1a1a] px-4 py-3 flex items-center gap-3 border-b border-white/8">
-              <div className="flex gap-1.5">
-                <div className="h-3 w-3 rounded-full bg-red-500/60" />
-                <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
-                <div className="h-3 w-3 rounded-full bg-green-500/60" />
-              </div>
-              <div className="flex-1 bg-[#111] rounded-md px-3 py-1 text-xs text-white/30 font-mono text-center">
-                glamhub.com/<span className="text-[#c9a96e]">your-salon-name</span>
-              </div>
-            </div>
-            {/* Fake website preview */}
-            <div className="bg-[#111] aspect-video relative overflow-hidden">
-              <div className="absolute inset-0 flex flex-col">
-                {/* Fake nav */}
-                <div className="h-12 bg-black/60 backdrop-blur flex items-center px-6 gap-6 border-b border-white/5">
-                  <div className="h-6 w-6 rounded-lg bg-[#c9a96e]" />
-                  <div className="h-3 w-24 rounded bg-white/20" />
-                  <div className="flex-1" />
-                  <div className="h-3 w-16 rounded bg-white/10" />
-                  <div className="h-3 w-14 rounded bg-white/10" />
-                  <div className="h-7 w-20 rounded-lg bg-[#c9a96e]" />
-                </div>
-                {/* Fake hero */}
-                <div className="flex-1 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-black/40" />
-                  <div className="absolute inset-0 bg-[#c9a96e]/5" />
-                  <div className="absolute bottom-6 left-8 space-y-3">
-                    <div className="h-2 w-16 rounded bg-[#c9a96e]/60" />
-                    <div className="h-8 w-64 rounded-lg bg-white/80" />
-                    <div className="h-4 w-48 rounded bg-white/30" />
-                    <div className="flex gap-2 mt-2">
-                      <div className="h-9 w-32 rounded-xl bg-[#c9a96e]" />
-                      <div className="h-9 w-28 rounded-xl border border-white/30" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Floating badge */}
-              <div className="absolute top-4 right-4 bg-[#c9a96e] text-black text-xs font-bold px-3 py-1.5 rounded-full">
-                Your unique URL ✓
-              </div>
-            </div>
+        {/* URL preview strip */}
+        <div className="relative z-10 mt-16 w-full max-w-md mx-auto">
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3">
+            <Globe className="h-4 w-4 text-[#c9a96e] shrink-0" />
+            <span className="text-sm text-white/40 font-mono">glamhub.com/</span>
+            <span className="text-sm text-[#c9a96e] font-mono font-semibold">your-salon-name</span>
+            <span className="ml-auto text-[10px] bg-[#c9a96e]/15 text-[#c9a96e] rounded-full px-2 py-0.5 font-semibold shrink-0">Your URL</span>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-      <section id="how-it-works" className="py-24 px-4 sm:px-6 bg-[#0a0a0a]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[#c9a96e] text-sm font-semibold uppercase tracking-widest mb-3">Simple Process</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
+      {/* ─── HOW IT WORKS ───────────────────────────────── */}
+      <section id="how-it-works" className="py-24 px-5 bg-[#0d0d0d]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[#c9a96e] text-xs font-semibold uppercase tracking-widest mb-3">Simple Process</p>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               From Sign Up to Live Website in 4 Steps
             </h2>
-            <p className="text-white/50 text-lg max-w-xl mx-auto">
-              No technical knowledge needed. We&apos;ve made it as simple as possible
-              for beauty business owners to get online.
+            <p className="text-white/45 text-base max-w-lg mx-auto">
+              No technical skills needed. We built it so any salon owner can go live in under an hour.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STEPS.map(({ step, title, desc }, i) => (
-              <div key={step} className="relative group">
-                {/* Connector line */}
-                {i < STEPS.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-[calc(100%+12px)] right-0 w-6 h-px bg-white/10 translate-x-0 z-10" />
-                )}
-                <div className="rounded-2xl border border-white/8 bg-white/3 p-6 hover:border-[#c9a96e]/30 hover:bg-[#c9a96e]/4 transition-all duration-300 h-full">
-                  <div className="font-serif text-4xl font-bold text-[#c9a96e]/25 mb-4">{step}</div>
-                  <h3 className="font-semibold text-white text-lg mb-2">{title}</h3>
-                  <p className="text-white/45 text-sm leading-relaxed">{desc}</p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {STEPS.map(({ num, title, desc }) => (
+              <div key={num} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[#c9a96e]/30 transition-colors group">
+                <div className="font-serif text-5xl font-bold text-[#c9a96e]/20 group-hover:text-[#c9a96e]/35 transition-colors mb-4">{num}</div>
+                <h3 className="font-semibold text-white mb-2">{title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-10">
             <Link href="/join">
-              <button className="flex items-center justify-center gap-2 text-base font-semibold text-black bg-[#c9a96e] px-8 py-4 rounded-xl hover:bg-[#b8935a] transition-all mx-auto group">
-                Start Building Now
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <button className="inline-flex items-center gap-2 text-sm font-semibold text-black bg-[#c9a96e] px-6 py-3 rounded-xl hover:bg-[#b8935a] transition-colors group">
+                Start Building Now <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ FEATURES ═══════════════ */}
-      <section id="features" className="py-24 px-4 sm:px-6 bg-[#0d0d0d]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[#c9a96e] text-sm font-semibold uppercase tracking-widest mb-3">Everything You Need</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
-              A Complete Business Platform for Beauty Professionals
+      {/* ─── FEATURES ───────────────────────────────────── */}
+      <section id="features" className="py-24 px-5 bg-[#080808]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[#c9a96e] text-xs font-semibold uppercase tracking-widest mb-3">Features</p>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Everything Your Beauty Business Needs
             </h2>
-            <p className="text-white/50 text-lg max-w-xl mx-auto">
-              From your first booking to your hundredth loyal customer — Glam Hub has every tool your beauty business needs.
+            <p className="text-white/45 text-base max-w-lg mx-auto">
+              One platform. Every tool you need to run and grow your salon online.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="group rounded-2xl border border-white/8 bg-white/3 p-6 hover:border-[#c9a96e]/30 hover:bg-[#c9a96e]/4 transition-all duration-300">
-                <div className="h-11 w-11 rounded-xl bg-[#c9a96e]/10 border border-[#c9a96e]/20 flex items-center justify-center mb-4 group-hover:bg-[#c9a96e]/20 transition-colors">
+              <div key={title} className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[#c9a96e]/25 hover:bg-[#c9a96e]/[0.04] transition-all">
+                <div className="h-11 w-11 rounded-xl border border-[#c9a96e]/20 bg-[#c9a96e]/[0.08] flex items-center justify-center mb-4 group-hover:bg-[#c9a96e]/15 transition-colors">
                   <Icon className="h-5 w-5 text-[#c9a96e]" />
                 </div>
-                <h3 className="font-semibold text-white text-lg mb-2">{title}</h3>
-                <p className="text-white/45 text-sm leading-relaxed">{desc}</p>
+                <h3 className="font-semibold text-white mb-2">{title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ PRICING ═══════════════ */}
-      <section id="pricing" className="py-24 px-4 sm:px-6 bg-[#0a0a0a]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[#c9a96e] text-sm font-semibold uppercase tracking-widest mb-3">Transparent Pricing</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
-              Simple Plans for Every Business
+      {/* ─── PRICING ────────────────────────────────────── */}
+      <section id="pricing" className="py-24 px-5 bg-[#0d0d0d]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[#c9a96e] text-xs font-semibold uppercase tracking-widest mb-3">Pricing</p>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Simple, Honest Pricing
             </h2>
-            <p className="text-white/50 text-lg max-w-xl mx-auto">
-              Start free, pay when you&apos;re ready. No hidden fees. Cancel anytime.
+            <p className="text-white/45 text-base max-w-lg mx-auto mb-8">
+              Start free. Pay only when you&apos;re ready. No hidden fees, ever.
             </p>
+
+            {/* Toggle */}
+            <div className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.04] p-1">
+              {(["monthly", "yearly"] as const).map((b) => (
+                <button key={b} onClick={() => setBilling(b)}
+                  className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition-all ${
+                    billing === b ? "bg-[#c9a96e] text-black shadow-sm" : "text-white/50 hover:text-white"
+                  }`}>
+                  {b}
+                  {b === "yearly" && <span className="ml-1.5 text-[10px] font-bold opacity-80">-17%</span>}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {PLANS.map(({ id, name, icon: Icon, monthly, yearly, desc, features, cta, popular }) => (
-              <div key={id} className={`relative rounded-2xl p-6 flex flex-col ${
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {PLANS.map(({ name, icon: Icon, price, year, desc, features, popular }) => (
+              <div key={name} className={`relative rounded-2xl p-6 flex flex-col ${
                 popular
-                  ? "border-2 border-[#c9a96e] bg-[#c9a96e]/6 shadow-[0_0_40px_rgba(201,169,110,0.15)]"
-                  : "border border-white/10 bg-white/3"
+                  ? "border-2 border-[#c9a96e] bg-[#c9a96e]/[0.06]"
+                  : "border border-white/[0.08] bg-white/[0.03]"
               }`}>
                 {popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c9a96e] text-black text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c9a96e] text-black text-xs font-bold px-4 py-1.5 rounded-full">
                     Most Popular
                   </div>
                 )}
-
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${popular ? "bg-[#c9a96e] text-black" : "bg-white/8 text-[#c9a96e]"}`}>
+                <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-4 ${popular ? "bg-[#c9a96e] text-black" : "bg-white/[0.07] text-[#c9a96e]"}`}>
                   <Icon className="h-5 w-5" />
                 </div>
-
                 <h3 className="font-serif text-2xl font-bold text-white mb-1">{name}</h3>
-                <p className="text-white/40 text-sm mb-5">{desc}</p>
-
-                <div className="mb-2">
-                  <span className="font-serif text-4xl font-bold text-white">{monthly}</span>
-                  <span className="text-white/40 text-sm">/month</span>
+                <p className="text-white/35 text-sm mb-5">{desc}</p>
+                <div className="mb-5">
+                  <span className="font-serif text-3xl font-bold">{billing === "monthly" ? price : year}</span>
+                  <span className="text-white/35 text-sm">/{billing === "monthly" ? "mo" : "yr"}</span>
                 </div>
-                <p className="text-white/30 text-xs mb-6">or {yearly}/year (save 17%)</p>
-
-                <ul className="space-y-2.5 mb-8 flex-1">
+                <ul className="space-y-2.5 mb-7 flex-1">
                   {features.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-white/65">
+                    <li key={f} className="flex items-start gap-2 text-sm text-white/55">
                       <CheckCircle className="h-4 w-4 text-[#c9a96e] shrink-0 mt-0.5" />
                       {f}
                     </li>
                   ))}
                 </ul>
-
                 <Link href="/join">
                   <button className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                     popular
                       ? "bg-[#c9a96e] text-black hover:bg-[#b8935a]"
-                      : "border border-white/15 text-white hover:bg-white/8"
+                      : "border border-white/12 text-white hover:bg-white/[0.06]"
                   }`}>
-                    {cta}
+                    Get Started
                   </button>
                 </Link>
               </div>
             ))}
           </div>
-
-          <p className="text-center text-white/30 text-sm mt-8">
-            All plans include your unique glamhub.com/your-business URL, SSL security, and 24/7 uptime.
+          <p className="text-center text-white/25 text-xs mt-6">
+            All plans include your unique glamhub.com/your-business URL · SSL security · 99.9% uptime
           </p>
         </div>
       </section>
 
-      {/* ═══════════════ TESTIMONIALS ═══════════════ */}
-      <section className="py-24 px-4 sm:px-6 bg-[#0d0d0d]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-[#c9a96e] text-sm font-semibold uppercase tracking-widest mb-3">Real Results</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
-              Beauty Businesses Love Glam Hub
+      {/* ─── TESTIMONIALS ───────────────────────────────── */}
+      <section className="py-24 px-5 bg-[#080808]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[#c9a96e] text-xs font-semibold uppercase tracking-widest mb-3">Testimonials</p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold">
+              Loved by Nigerian Beauty Businesses
             </h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ name, role, text, stars }) => (
-              <div key={name} className="rounded-2xl border border-white/8 bg-white/3 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {TESTIMONIALS.map(({ name, biz, quote, stars }) => (
+              <div key={name} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
                 <div className="flex mb-4">
                   {Array.from({ length: stars }).map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-[#c9a96e] text-[#c9a96e]" />
                   ))}
                 </div>
-                <p className="text-white/70 text-sm leading-relaxed mb-5 italic">&ldquo;{text}&rdquo;</p>
+                <p className="text-white/60 text-sm leading-relaxed mb-5 italic">&ldquo;{quote}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-[#c9a96e] flex items-center justify-center text-black font-bold text-sm shrink-0">
+                  <div className="h-9 w-9 rounded-full bg-[#c9a96e] flex items-center justify-center text-black font-bold text-sm shrink-0">
                     {name[0]}
                   </div>
                   <div>
                     <p className="font-semibold text-white text-sm">{name}</p>
-                    <p className="text-white/40 text-xs">{role}</p>
+                    <p className="text-white/35 text-xs">{biz}</p>
                   </div>
                 </div>
               </div>
@@ -403,71 +348,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════ FINAL CTA ═══════════════ */}
-      <section className="py-28 px-4 sm:px-6 bg-[#0a0a0a] relative overflow-hidden">
+      {/* ─── FINAL CTA ──────────────────────────────────── */}
+      <section className="py-28 px-5 bg-[#0d0d0d] relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="h-[500px] w-[500px] rounded-full bg-[#c9a96e]/8 blur-[100px]" />
+          <div className="h-[400px] w-[400px] rounded-full bg-[#c9a96e]/[0.07] blur-[90px]" />
         </div>
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#c9a96e]/30 bg-[#c9a96e]/8 px-4 py-1.5 mb-6 text-xs font-medium text-[#c9a96e]">
-            <Sparkles className="h-3.5 w-3.5" />
-            Join 500+ beauty businesses already on Glam Hub
-          </div>
-          <h2 className="font-serif text-5xl md:text-6xl font-bold text-white mb-5 leading-tight">
-            Ready to Build Your
-            <br />
-            <span className="text-[#c9a96e]">Beauty Empire?</span>
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
+          <h2 className="font-serif text-4xl sm:text-5xl font-bold mb-5 leading-tight">
+            Your Beauty Business Deserves to Be Online
           </h2>
-          <p className="text-white/50 text-lg mb-10 max-w-xl mx-auto">
-            Create your professional business website today. Your customers are already looking for you online — make sure they find you.
+          <p className="text-white/45 text-base mb-10 max-w-lg mx-auto">
+            Join hundreds of Nigerian salons already using Glam Hub to take bookings,
+            sell products, and grow their brand online.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/join">
-              <button className="flex items-center justify-center gap-2 text-base font-semibold text-black bg-[#c9a96e] px-8 py-4 rounded-xl hover:bg-[#b8935a] transition-all hover:shadow-[0_0_30px_rgba(201,169,110,0.3)] group">
-                Create Your Business Page — It&apos;s Free to Start
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </Link>
-          </div>
-          <p className="text-white/25 text-sm mt-5">No credit card required · Set up in minutes · Cancel anytime</p>
+          <Link href="/join">
+            <button className="inline-flex items-center gap-2 text-base font-semibold text-black bg-[#c9a96e] px-8 py-4 rounded-xl hover:bg-[#b8935a] transition-all hover:shadow-[0_0_30px_rgba(201,169,110,0.2)] group">
+              Create My Business Website — Free
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </Link>
+          <p className="text-white/20 text-xs mt-4">No credit card required · Setup in minutes · Cancel anytime</p>
         </div>
       </section>
 
-      {/* ═══════════════ FOOTER ═══════════════ */}
-      <footer className="border-t border-white/8 py-12 px-4 sm:px-6 bg-[#080808]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-[#c9a96e] flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-black" />
-              </div>
-              <span className="font-serif text-xl font-bold">{APP_NAME}</span>
+      {/* ─── FOOTER ─────────────────────────────────────── */}
+      <footer className="border-t border-white/[0.07] py-10 px-5 bg-[#080808]">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-[#c9a96e] flex items-center justify-center">
+              <Sparkles className="h-3.5 w-3.5 text-black" />
             </div>
-            <p className="text-white/35 text-sm max-w-xs leading-relaxed">
-              Nigeria&apos;s premier SaaS platform for beauty and salon businesses.
-              Build your website, grow your clientele, run your business — all in one place.
-            </p>
+            <span className="font-serif font-bold text-white">Glam Hub</span>
           </div>
-          <div>
-            <h4 className="font-semibold text-white/70 text-sm mb-4">Platform</h4>
-            <ul className="space-y-2.5 text-sm text-white/35">
-              {["How It Works", "Features", "Pricing", "Sign Up"].map((l) => (
-                <li key={l}><a href="#" className="hover:text-[#c9a96e] transition-colors">{l}</a></li>
-              ))}
-            </ul>
+          <div className="flex flex-wrap justify-center gap-6 text-xs text-white/30">
+            {["Features", "Pricing", "How It Works", "Sign In", "Create Account"].map((l) => (
+              <a key={l} href="#" className="hover:text-white/60 transition-colors">{l}</a>
+            ))}
           </div>
-          <div>
-            <h4 className="font-semibold text-white/70 text-sm mb-4">Support</h4>
-            <ul className="space-y-2.5 text-sm text-white/35">
-              {["Help Center", "Contact Us", "Privacy Policy", "Terms of Service"].map((l) => (
-                <li key={l}><a href="#" className="hover:text-[#c9a96e] transition-colors">{l}</a></li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-white/8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/25 text-xs">© {new Date().getFullYear()} {APP_NAME}. All rights reserved.</p>
-          <p className="text-white/25 text-xs">Built for Nigerian Beauty Professionals 🇳🇬</p>
+          <p className="text-xs text-white/20">© {new Date().getFullYear()} Glam Hub 🇳🇬</p>
         </div>
       </footer>
     </div>
