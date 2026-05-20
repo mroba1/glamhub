@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum CompanyStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum SubscriptionStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum Interval {
+  MONTHLY
+  YEARLY
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RE_UPLOAD_REQUESTED
+}
+
+model User {
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  phone          String?
+  password       String
+  role           Role           @default(CUSTOMER)
+  avatarUrl      String?
+  isActive       Boolean        @default(true)
+  companyId      String?
+  company        Company?       @relation("CompanyCustomers", fields: [companyId], references: [id])
+  managedCompany Company?       @relation("CompanyAdmin")
+  bookings       Booking[]
+  orders         Order[]
+  notifications  Notification[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([email])
+  @@index([companyId])
+}
+
+model Company {
+  id           String           @id @default(cuid())
+  name         String
+  slug         String           @unique
+  description  String?
+  email        String
+  phone        String?
+  address      String?
+  city         String?
+  state        String?
+  status       CompanyStatus    @default(PENDING)
+  adminId      String           @unique
+  admin        User             @relation("CompanyAdmin", fields: [adminId], references: [id])
+  customers    User[]           @relation("CompanyCustomers")
+  branding     CompanyBranding?
+  subscription Subscription?
+  services     Service[]
+  products     Product[]
+  bookings     Booking[]
+  orders       Order[]
+  categories   Category[]
+  payments     Payment[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([slug])
+  @@index([status])
+}
+
+model CompanyBranding {
+  id                   String   @id @default(cuid())
+  companyId            String   @unique
+  company              Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  logoUrl              String?
+  bannerUrl            String?
+  primaryColor         String   @default("#10b981")
+  secondaryColor       String   @default("#064e3b")
+  businessName         String?
+  tagline              String?
+  about                String?
+  phone                String?
+  email                String?
+  address              String?
+  templateId           String?
+  instagram            String?
+  tiktok               String?
+  whatsapp             String?
+  facebook             String?
+  showBooking          Boolean  @default(true)
+  showMarketplace      Boolean  @default(true)
+  showFeaturedServices Boolean  @default(true)
+  showTestimonials     Boolean  @default(true)
+  showGallery          Boolean  @default(false)
+  openingHours         Json?
+  gallery              String[]
+  updatedAt            DateTime @updatedAt
+}
+
+model SubscriptionPlan {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  monthlyPrice  Float
+  yearlyPrice   Float
+  maxProducts   Int            @default(20)
+  maxBookings   Int            @default(50)
+  features      String[]
+  isPopular     Boolean        @default(false)
+  isActive      Boolean        @default(true)
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  companyId        String             @unique
+  company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  planId           String
+  plan             SubscriptionPlan   @relation(fields: [planId], references: [id])
+  interval         Interval           @default(MONTHLY)
+  status           SubscriptionStatus @default(PENDING_PAYMENT)
+  amount           Float
+  paymentProofUrl  String?
+  paymentReference String?
+  approvedBy       String?
+  approvedAt       DateTime?
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id])
+  planName      String
+  interval      Interval
+  amount        Float
+  screenshotUrl String?
+  reference     String?
+  status        PaymentStatus @default(PENDING)
+  reviewNote    String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String
+  isGlobal  Boolean   @default(false)
+  isActive  Boolean   @default(true)
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  products  Product[]
+  services  Service[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Service {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  duration     Int
+  imageUrl     String?
+  isActive     Boolean   @default(true)
+  bookingCount Int       @default(0)
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     Category  @relation(fields: [categoryId], references: [id])
+  bookings     Booking[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([companyId])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  bookingNumber   String        @unique
+  customerId      String
+  customer        User          @relation(fields: [customerId], references: [id])
+  serviceId       String
+  service         Service       @relation(fields: [serviceId], references: [id])
+  companyId       String
+  company         Company       @relation(fields: [companyId], references: [id])
+  date            String
+  timeSlot        String
+  status          BookingStatus @default(PENDING)
+  paymentProofUrl String?
+  notes           String?
+  adminNote       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model Product {
+  id             String        @id @default(cuid())
+  name           String
+  slug           String
+  description    String
+  price          Float
+  compareAtPrice Float?
+  stock          Int           @default(0)
+  sku            String
+  status         ProductStatus @default(ACTIVE)
+  tags           String[]
+  rating         Float         @default(0)
+  reviewCount    Int           @default(0)
+  companyId      String
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category      @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  orderItems     OrderItem[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String?
+  isPrimary Boolean @default(false)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customerId      String
+  customer        User        @relation(fields: [customerId], references: [id])
+  companyId       String
+  company         Company     @relation(fields: [companyId], references: [id])
+  items           OrderItem[]
+  subtotal        Float
+  shippingFee     Float       @default(0)
+  discount        Float       @default(0)
+  total           Float
+  status          OrderStatus @default(PENDING)
+  paymentProofUrl String?
+  shippingAddress String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([companyId])
+  @@index([customerId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  metadata  Json?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  email       String?
+  note        String?
+  status      String    @default("pending")
+  createdBy   String
+  usedAt      DateTime?
+  usedBy      String?
+  companyName String?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+}
