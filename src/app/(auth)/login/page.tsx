@@ -53,7 +53,12 @@ export default function LoginPage() {
       else if (user.role === "ADMIN")  router.push("/admin/dashboard");
       else                             router.push("/marketplace");
     } catch (err: any) {
-      toast.error(err.message || "Login failed");
+      const msg = err.message || "";
+      if (msg.includes("fetch") || msg.includes("Load") || msg.includes("network") || msg.includes("Failed")) {
+        toast.error("Server is waking up — please wait 30 seconds and try again.", { duration: 5000 });
+      } else {
+        toast.error(msg || "Login failed. Check your email and password.");
+      }
     } finally {
       setIsLoading(false);
     }

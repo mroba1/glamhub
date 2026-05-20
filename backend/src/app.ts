@@ -20,9 +20,24 @@ const app = express();
 // Security
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({
-  origin: [env.FRONTEND_URL, "http://localhost:3000", "https://glamhub-two.vercel.app"],
+  origin: (origin, callback) => {
+    // Allow all Vercel deployments, localhost, and the configured frontend URL
+    const allowed = [
+      env.FRONTEND_URL,
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://glamhub-ypsy.vercel.app",
+      "https://glamhub-two.vercel.app",
+    ];
+    if (!origin || allowed.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 // Rate limiting
