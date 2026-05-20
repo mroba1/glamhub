@@ -1,100 +1,53 @@
-import type {
-  ApiResponse,
-  Category,
-  PaginatedResponse,
-  Product,
-  QueryParams,
-} from "@/types";
+import { api, apiUpload } from "@/lib/api";
 
-export interface CreateProductPayload {
-  name: string;
-  description: string;
-  price: number;
-  compareAtPrice?: number;
-  categoryId: string;
-  stock: number;
-  sku: string;
-  tags?: string[];
-}
-
-export interface UpdateProductPayload extends Partial<CreateProductPayload> {
-  status?: "active" | "inactive";
-}
-
-export interface UploadProductImagesPayload {
-  productId: string;
-  files: File[];
-}
-
-// Placeholder — replace with real HTTP calls
 export const productService = {
-  async getProducts(params?: QueryParams): Promise<ApiResponse<PaginatedResponse<Product>>> {
-    await new Promise((r) => setTimeout(r, 700));
-    const { MOCK_PRODUCTS } = await import("@/constants/mock-data");
-    let filtered = [...MOCK_PRODUCTS];
-    if (params?.search) {
-      const q = params.search.toLowerCase();
-      filtered = filtered.filter(
-        (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
-      );
-    }
-    if (params?.categoryId) {
-      filtered = filtered.filter((p) => p.categoryId === params.categoryId);
-    }
-    return {
-      success: true,
-      data: { data: filtered, total: filtered.length, page: 1, limit: 10, totalPages: 1 },
-    };
+  async getProducts(companyId: string, params?: { search?: string; categoryId?: string; page?: number }) {
+    const q = new URLSearchParams(params as any).toString();
+    return api(`/products/public/${companyId}${q ? `?${q}` : ""}`);
   },
 
-  async getProductById(id: string): Promise<ApiResponse<Product>> {
-    await new Promise((r) => setTimeout(r, 400));
-    const { MOCK_PRODUCTS } = await import("@/constants/mock-data");
-    const product = MOCK_PRODUCTS.find((p) => p.id === id);
-    return product
-      ? { success: true, data: product }
-      : { success: false, error: "Product not found" };
+  async getProductById(companyId: string, id: string) {
+    return api(`/products/public/${companyId}/${id}`);
   },
 
-  async createProduct(payload: CreateProductPayload): Promise<ApiResponse<Product>> {
-    await new Promise((r) => setTimeout(r, 900));
-    return { success: true, data: {} as Product, message: "Product created successfully" };
+  async getCategories() {
+    return api("/categories/global");
   },
 
-  async updateProduct(id: string, payload: UpdateProductPayload): Promise<ApiResponse<Product>> {
-    await new Promise((r) => setTimeout(r, 700));
-    return { success: true, data: {} as Product, message: "Product updated successfully" };
+  // Admin
+  async getMyProducts() {
+    return api("/products");
   },
 
-  async deleteProduct(id: string): Promise<ApiResponse<null>> {
-    await new Promise((r) => setTimeout(r, 500));
-    return { success: true, message: "Product deleted successfully" };
+  async createProduct(formData: FormData) {
+    return apiUpload("/products", formData);
   },
 
-  async uploadProductImages(payload: UploadProductImagesPayload): Promise<ApiResponse<string[]>> {
-    await new Promise((r) => setTimeout(r, 2000));
-    const urls = payload.files.map((f) => URL.createObjectURL(f));
-    return { success: true, data: urls, message: "Images uploaded successfully" };
+  async updateProduct(id: string, formData: FormData) {
+    const token = localStorage.getItem("glamhub_token");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://glamhub.onrender.com/api"}/products/${id}`, {
+      method: "PATCH",
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    return data;
   },
 
-  async getCategories(): Promise<ApiResponse<Category[]>> {
-    await new Promise((r) => setTimeout(r, 400));
-    const { MOCK_CATEGORIES } = await import("@/constants/mock-data");
-    return { success: true, data: MOCK_CATEGORIES };
+  async deleteProduct(id: string) {
+    return api(`/products/${id}`, { method: "DELETE" });
   },
 
-  async createCategory(payload: { name: string; description?: string }): Promise<ApiResponse<Category>> {
-    await new Promise((r) => setTimeout(r, 600));
-    return { success: true, data: {} as Category, message: "Category created successfully" };
+  async getAdminCategories() {
+    return api("/categories");
   },
 
-  async updateCategory(id: string, payload: { name?: string; isActive?: boolean }): Promise<ApiResponse<Category>> {
-    await new Promise((r) => setTimeout(r, 500));
-    return { success: true, data: {} as Category, message: "Category updated successfully" };
+  async createCategory(payload: { name: string }) {
+    return api("/categories", { method: "POST", body: JSON.stringify(payload) });
   },
 
-  async deleteCategory(id: string): Promise<ApiResponse<null>> {
-    await new Promise((r) => setTimeout(r, 400));
-    return { success: true, message: "Category deleted successfully" };
+  async deleteCategory(id: string) {
+    return api(`/categories/${id}`, { method: "DELETE" });
   },
 };

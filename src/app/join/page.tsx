@@ -9,7 +9,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth.store";
+import { authService } from "@/services/auth.service";
 import { APP_NAME } from "@/constants";
+import { toast } from "sonner";
 
 const schema = z.object({
   ownerName:       z.string().min(2, "Enter your full name"),
@@ -62,20 +64,33 @@ export default function JoinPage() {
   const handleRegister = async (data: FormData) => {
     if (!businessType) return;
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      const res = await authService.register({
+        name:         data.ownerName,
+        email:        data.email,
+        phone:        data.phone,
+        password:     data.password,
+        role:         "ADMIN",
+        businessName: data.businessName,
+        city:         data.city,
+        state:        data.state,
+      });
 
-    setUser({
-      id: "admin-" + Math.random().toString(36).substring(2, 7),
-      name: data.ownerName,
-      email: data.email,
-      phone: data.phone,
-      role: "admin",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    setIsSubmitting(false);
-    setDone(true);
+      setUser({
+        id:        res.data.user.id,
+        name:      res.data.user.name,
+        email:     res.data.user.email,
+        phone:     res.data.user.phone,
+        role:      "admin",
+        createdAt: res.data.user.createdAt,
+        updatedAt: res.data.user.updatedAt,
+      });
+      setDone(true);
+    } catch (err: any) {
+      toast.error(err.message || "Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ── Success screen ──

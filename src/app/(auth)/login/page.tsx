@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginFormData } from "@/validators";
 import { APP_NAME } from "@/constants";
 import { useAuthStore } from "@/store/auth.store";
+import { authService } from "@/services/auth.service";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -25,35 +26,37 @@ export default function LoginPage() {
 
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
+    try {
+      const res = await authService.login(data);
+      const { user } = res.data;
 
-    // TODO: replace with real API call — backend returns { user, token }
-    // const response = await authService.login(data);
-    // const { user } = response.data;
-    await new Promise((r) => setTimeout(r, 1200));
+      const roleMap: Record<string, "customer" | "admin" | "super_admin"> = {
+        CUSTOMER:    "customer",
+        ADMIN:       "admin",
+        SUPER_ADMIN: "super_admin",
+      };
 
-    // Temporary mock role resolution (remove when backend is ready)
-    const role = data.email.startsWith("super")
-      ? "super_admin"
-      : data.email.startsWith("admin")
-      ? "admin"
-      : "customer";
+      setUser({
+        id:        user.id,
+        name:      user.name,
+        email:     user.email,
+        phone:     user.phone,
+        role:      roleMap[user.role] ?? "customer",
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      });
 
-    setUser({
-      id: role === "super_admin" ? "sa1" : role === "admin" ? "a1" : "u1",
-      name: role === "super_admin" ? "Super Admin" : role === "admin" ? "Studio Admin" : "Guest User",
-      email: data.email,
-      role,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+      toast.success("Welcome back!");
 
-    setIsLoading(false);
-    toast.success("Welcome back!");
-
-    // Redirect based on role — same logic will apply with real backend
-    if (role === "super_admin") router.push("/super-admin/analytics");
-    else if (role === "admin")   router.push("/admin/dashboard");
-    else                         router.push("/marketplace");
+      if (user.role === "SUPER_ADMIN") router.push("/super-admin/analytics");
+      else if (user.role === "ADMIN")  router.push("/admin/dashboard");
+      else                             router.push("/marketplace");
+    } catch (err: any) {
+      toast.error(err.message || "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
