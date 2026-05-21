@@ -17,11 +17,12 @@ import { toast } from "sonner";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const setUser       = useAuthStore((s) => s.setUser);
-  const setCompany    = useAuthStore((s) => s.setCompany);
-  const setBranding   = useBrandingStore((s) => s.setBranding);
+  const [rememberMe, setRememberMe]     = useState(true);
+  const [isLoading, setIsLoading]       = useState(false);
+  const router      = useRouter();
+  const setUser     = useAuthStore((s) => s.setUser);
+  const setCompany  = useAuthStore((s) => s.setCompany);
+  const setBranding = useBrandingStore((s) => s.setBranding);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -30,7 +31,7 @@ export default function LoginPage() {
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const res = await authService.login(data);
+      const res = await authService.login(data, rememberMe);
       const { user } = res.data;
 
       const roleMap: Record<string, "customer" | "admin" | "super_admin"> = {
@@ -167,7 +168,12 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm text-[hsl(0,0%,60%)] cursor-pointer">
-                <input type="checkbox" className="rounded border-[hsl(0,0%,20%)] bg-[hsl(0,0%,7%)]" />
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded border-[hsl(0,0%,20%)] bg-[hsl(0,0%,7%)] accent-[#c9a96e]"
+                />
                 Remember me
               </label>
               <Link href="#" className="text-sm text-[hsl(38,65%,60%)] hover:underline">

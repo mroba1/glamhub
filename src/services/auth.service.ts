@@ -9,13 +9,14 @@ export const authService = {
       method: "POST",
       body: JSON.stringify({ ...payload, role: payload.role ?? "ADMIN" }),
     });
-    if (res.data?.accessToken) setToken(res.data.accessToken);
+    // Always remember on registration
+    if (res.data?.accessToken) setToken(res.data.accessToken, true);
     return res;
   },
 
-  async login(payload: { email: string; password: string }) {
+  async login(payload: { email: string; password: string }, remember = true) {
     const res = await api("/auth/login", { method: "POST", body: JSON.stringify(payload) });
-    if (res.data?.accessToken) setToken(res.data.accessToken);
+    if (res.data?.accessToken) setToken(res.data.accessToken, remember);
     return res;
   },
 

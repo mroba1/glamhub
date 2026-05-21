@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants";
 import { KeepAlive } from "@/components/shared/keep-alive";
+import { SessionRestorer } from "@/components/shared/session-restorer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen bg-[hsl(0,0%,4%)] text-[hsl(0,0%,95%)] antialiased">
         <KeepAlive />
+        <SessionRestorer />
         {children}
         <Toaster
           theme="dark"
