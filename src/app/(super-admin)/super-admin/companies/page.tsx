@@ -40,7 +40,8 @@ export default function SuperAdminCompaniesPage() {
 
   const filtered = companies.filter((c) => {
     const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.city?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || c.status === statusFilter;
+    // Compare case-insensitively — backend returns UPPERCASE, constants use UPPERCASE now
+    const matchStatus = statusFilter === "all" || c.status?.toUpperCase() === statusFilter.toUpperCase();
     return matchSearch && matchStatus;
   });
 
@@ -80,7 +81,7 @@ export default function SuperAdminCompaniesPage() {
           {COMPANY_STATUSES.map((s) => (
             <div key={s.value} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">
-                {companies.filter((c) => c.status === s.value).length}
+                {companies.filter((c) => c.status?.toUpperCase() === s.value).length}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
             </div>

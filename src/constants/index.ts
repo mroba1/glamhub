@@ -54,10 +54,10 @@ export const ORDER_STATUSES = [
 ] as const;
 
 export const COMPANY_STATUSES = [
-  { value: "active", label: "Active", color: "green" },
-  { value: "inactive", label: "Inactive", color: "gray" },
-  { value: "suspended", label: "Suspended", color: "red" },
-  { value: "pending", label: "Pending Review", color: "yellow" },
+  { value: "PENDING",   label: "Pending Review", color: "yellow" },
+  { value: "ACTIVE",    label: "Active",          color: "green"  },
+  { value: "INACTIVE",  label: "Inactive",        color: "gray"   },
+  { value: "SUSPENDED", label: "Suspended",       color: "red"    },
 ] as const;
 
 export const TIME_SLOTS = [
