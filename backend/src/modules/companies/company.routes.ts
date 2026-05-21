@@ -22,6 +22,27 @@ router.get("/public/:slug", async (req, res) => {
 });
 
 // Admin — get own company stats
+// Admin — get own customers
+router.get("/me/customers", authenticate, isAdmin, async (req: Req, res: Response) => {
+  try {
+    const { search, page = 1, limit = 20 } = req.query as any;
+    const where: any = { companyId: req.user!.companyId!, role: "CUSTOMER" };
+    if (search) where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+    const [data, total] = await Promise.all([
+      prisma.user.findMany({
+        where, skip: (+page - 1) * +limit, take: +limit,
+        select: { id: true, name: true, email: true, phone: true, avatarUrl: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.user.count({ where }),
+    ]);
+    ok(res, { data, total, page: +page, limit: +limit, totalPages: Math.ceil(total / +limit) });
+  } catch (e: any) { fail(res, e.message); }
+});
+
 router.get("/me/stats", authenticate, isAdmin, async (req: Req, res: Response) => {
   try {
     const cid = req.user!.companyId!;
