@@ -60,8 +60,8 @@ export default function CompanyMiniSitePage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/85 backdrop-blur-md border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
 
-          {/* LEFT — Logo + Brand Name (horizontal, fixed order) */}
-          <div className="flex items-center gap-3 min-w-0">
+          {/* LEFT — Logo + Brand Name — clicking goes to THIS company's homepage */}
+          <Link href={`/${company.slug}`} className="flex items-center gap-3 min-w-0">
             {/* Logo slot — always 40×40, left of name */}
             <div className="h-10 w-10 shrink-0 rounded-xl overflow-hidden flex items-center justify-center"
               style={{ background: logoUrl ? "transparent" : color }}>
@@ -83,10 +83,11 @@ export default function CompanyMiniSitePage() {
             <span className="font-bold text-white text-base sm:text-lg truncate">
               {brandName}
             </span>
-          </div>
+          </Link>
 
-          {/* CENTER — Nav links (hidden on mobile) */}
+          {/* CENTER — Nav links — Home always returns to THIS company's page */}
           <nav className="hidden md:flex items-center gap-6 text-sm text-white/60">
+            <Link href={`/${company.slug}`} className="hover:text-white transition-colors">Home</Link>
             {sections.showFeaturedServices && (
               <a href="#services" className="hover:text-white transition-colors">Services</a>
             )}
@@ -343,8 +344,8 @@ export default function CompanyMiniSitePage() {
       <footer className="border-t border-white/10 py-8 px-4 sm:px-6 bg-[#080808]">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
 
-          {/* Logo + Name — same horizontal layout as navbar */}
-          <div className="flex items-center gap-3">
+          {/* Footer logo — clicking returns to THIS company's homepage */}
+          <Link href={`/${company.slug}`} className="flex items-center gap-3">
             <div className="h-8 w-8 shrink-0 rounded-lg overflow-hidden flex items-center justify-center" style={{ background: logoUrl ? "transparent" : color }}>
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -357,7 +358,7 @@ export default function CompanyMiniSitePage() {
               <p className="text-sm font-semibold text-white">{brandName}</p>
               <p className="text-xs text-white/40">Powered by Glam Hub</p>
             </div>
-          </div>
+          </Link>
 
           {/* Social links */}
           <div className="flex items-center gap-3">

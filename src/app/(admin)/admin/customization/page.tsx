@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { MOCK_TEMPLATES } from "@/constants/mock-data";
 import { useBrandingStore } from "@/store/branding.store";
+import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 
 const TABS = [
@@ -45,6 +46,7 @@ type InfoFormData = z.infer<typeof infoSchema>;
 export default function AdminCustomizationPage() {
   const [activeTab, setActiveTab] = useState<TabId>("branding");
   const { branding, setBranding } = useBrandingStore();
+  const companySlug = useAuthStore((s) => s.companySlug); // real DB slug
   const [isSaving, setIsSaving] = useState(false);
 
   const infoForm = useForm<InfoFormData>({
@@ -91,10 +93,10 @@ export default function AdminCustomizationPage() {
         <div className="flex items-center gap-2 text-sm text-emerald-700">
           <Globe className="h-4 w-4 shrink-0" />
           Your mini-site:
-          <span className="font-mono font-semibold">glamhub.com/{branding.businessName.toLowerCase().replace(/\s+/g, "-")}</span>
+          <span className="font-mono font-semibold">glamhub.com/{companySlug || "your-salon"}</span>
         </div>
         <a
-          href={`/${branding.businessName.toLowerCase().replace(/\s+/g, "-")}`}
+          href={`/${companySlug || "your-salon"}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900"

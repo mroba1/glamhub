@@ -19,8 +19,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
-  const setBranding = useBrandingStore((s) => s.setBranding);
+  const setUser       = useAuthStore((s) => s.setUser);
+  const setCompany    = useAuthStore((s) => s.setCompany);
+  const setBranding   = useBrandingStore((s) => s.setBranding);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -48,6 +49,11 @@ export default function LoginPage() {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
+
+      // Store the real DB slug and companyId — never changes, never derived from branding
+      if (user.managedCompany) {
+        setCompany(user.managedCompany.id, user.managedCompany.slug);
+      }
 
       // Restore company branding from backend after login so it persists
       if (user.role === "ADMIN" && user.managedCompany?.branding) {

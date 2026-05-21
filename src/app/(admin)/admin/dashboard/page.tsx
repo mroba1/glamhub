@@ -96,18 +96,17 @@ function DonutChart() {
 }
 
 export default function AdminDashboardPage() {
-  const user = useAuthStore((s) => s.user);
-  const branding = useBrandingStore((s) => s.branding);
+  const user        = useAuthStore((s) => s.user);
+  const companySlug = useAuthStore((s) => s.companySlug); // real slug from DB
+  const branding    = useBrandingStore((s) => s.branding);
   const [copied, setCopied] = useState(false);
 
   const pendingBookings = MOCK_BOOKINGS.filter((b) => b.status === "pending").length;
   const revenue = MOCK_BOOKINGS.filter((b) => b.status !== "rejected").reduce((s, b) => s + b.servicePrice, 0);
   const chartData = MOCK_ANALYTICS.revenueChart.slice(0, 8).map((d) => ({ label: d.label, value: d.value, secondary: d.secondary ?? 0 }));
 
-  // Derive company slug from branding business name
-  const companySlug = (branding.businessName || user?.name || "my-salon")
-    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const customerLink = `${BASE_URL}/${companySlug}`;
+  // Use real DB slug — never derived from branding name
+  const customerLink = `${BASE_URL}/${companySlug || "your-salon"}`;
 
   // Onboarding steps
   const steps = [

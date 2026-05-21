@@ -37,8 +37,9 @@ const BUSINESS_TYPES = [
 const STEPS = ["Personal Info", "Business Info", "Password"];
 
 export default function JoinPage() {
-  const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
+  const router      = useRouter();
+  const setUser     = useAuthStore((s) => s.setUser);
+  const setCompany  = useAuthStore((s) => s.setCompany);
 
   const [step, setStep] = useState(0);
   const [businessType, setBusinessType] = useState("");
@@ -75,6 +76,11 @@ export default function JoinPage() {
         city:         data.city,
         state:        data.state,
       });
+
+      // Save the real DB slug immediately after registration
+      if (res.data.user.managedCompany) {
+        setCompany(res.data.user.managedCompany.id, res.data.user.managedCompany.slug);
+      }
 
       setUser({
         id:        res.data.user.id,
