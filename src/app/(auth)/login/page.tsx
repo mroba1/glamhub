@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginFormData } from "@/validators";
 import { APP_NAME } from "@/constants";
 import { useAuthStore } from "@/store/auth.store";
+import { useBrandingStore } from "@/store/branding.store";
 import { authService } from "@/services/auth.service";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
+  const setBranding = useBrandingStore((s) => s.setBranding);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -46,6 +48,38 @@ export default function LoginPage() {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
+
+      // Restore company branding from backend after login so it persists
+      if (user.role === "ADMIN" && user.managedCompany?.branding) {
+        const b = user.managedCompany.branding;
+        setBranding((prev) => ({
+          ...prev,
+          companyId:    user.managedCompany.id,
+          businessName: b.businessName || user.managedCompany.name,
+          primaryColor: b.primaryColor || prev.primaryColor,
+          tagline:      b.tagline      || prev.tagline,
+          about:        b.about        || prev.about,
+          phone:        b.phone        || user.managedCompany.phone || prev.phone,
+          email:        b.email        || user.managedCompany.email || prev.email,
+          address:      b.address      || user.managedCompany.address || prev.address,
+          logoUrl:      b.logoUrl      || prev.logoUrl,
+          bannerUrl:    b.bannerUrl    || prev.bannerUrl,
+          gallery:      b.gallery?.length ? b.gallery : prev.gallery,
+          socialLinks:  {
+            instagram: b.instagram || prev.socialLinks.instagram,
+            tiktok:    b.tiktok    || prev.socialLinks.tiktok,
+            whatsapp:  b.whatsapp  || prev.socialLinks.whatsapp,
+            facebook:  b.facebook  || prev.socialLinks.facebook,
+          },
+          sections: {
+            showBooking:         b.showBooking         ?? prev.sections.showBooking,
+            showMarketplace:     b.showMarketplace     ?? prev.sections.showMarketplace,
+            showFeaturedServices: b.showFeaturedServices ?? prev.sections.showFeaturedServices,
+            showTestimonials:    b.showTestimonials    ?? prev.sections.showTestimonials,
+            showGallery:         b.showGallery         ?? prev.sections.showGallery,
+          },
+        }));
+      }
 
       toast.success("Welcome back!");
 

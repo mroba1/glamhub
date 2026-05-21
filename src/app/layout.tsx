@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants";
+import { KeepAlive } from "@/components/shared/keep-alive";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen bg-[hsl(0,0%,4%)] text-[hsl(0,0%,95%)] antialiased">
+        <KeepAlive />
         {children}
         <Toaster
           theme="dark"
